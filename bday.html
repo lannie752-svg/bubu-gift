@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🎁 Surprise Gift — 布布 & 一二</title>
+  <style>
+    :root{
+      --bg:#0b0f19; --card:rgba(255,255,255,.06); --stroke:rgba(255,255,255,.10);
+      --txt:#eef2ff; --muted:rgba(255,255,255,.78); --hot:#ff4d6d;
+      --btn:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{min-height:100vh;display:grid;place-items:center;padding:22px}
+    .card{
+      width:min(920px, 96vw);
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      box-shadow:0 28px 80px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .top{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      padding:14px 16px;border-bottom:1px solid var(--stroke);
+      background:rgba(11,15,25,.55);backdrop-filter:blur(10px);
+    }
+    .title{font-weight:850;letter-spacing:.2px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      border:0;border-radius:14px;padding:10px 12px;cursor:pointer;font-weight:800;
+      background:var(--btn);color:var(--txt);
+    }
+    button.primary{background:var(--hot);color:#08101f}
+    button.ghost{background:transparent;border:1px solid var(--stroke)}
+    .body{padding:18px 16px 22px;position:relative;min-height:520px}
+    .sub{opacity:.86;line-height:1.45;max-width:760px}
+
+    /* Scenes */
+    .scene{display:none}
+    .scene.on{display:block}
+
+    /* Gift box */
+    .giftStage{display:grid;place-items:center;min-height:440px;position:relative}
+    .giftHint{opacity:.85;margin-top:10px}
+    .gift{
+      width:180px;height:180px;border-radius:22px;
+      background:linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 24px 60px rgba(0,0,0,.55);
+      position:relative;cursor:pointer;user-select:none;
+      display:grid;place-items:center;
+      transform:translateY(0);
+      transition:transform 180ms ease;
+    }
+    .gift:hover{transform:translateY(-3px)}
+    .ribbonV,.ribbonH{
+      position:absolute;background:rgba(255,77,109,.85);
+      filter:drop-shadow(0 10px 18px rgba(0,0,0,.35));
+    }
+    .ribbonV{width:38px;height:100%;left:50%;transform:translateX(-50%);border-radius:14px}
+    .ribbonH{height:38px;width:100%;top:50%;transform:translateY(-50%);border-radius:14px}
+    .bow{
+      position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+      width:120px;height:64px;
+      display:flex;justify-content:center;gap:10px;
+    }
+    .bow:before,.bow:after{
+      content:"";display:block;width:52px;height:52px;border-radius:16px;
+      background:rgba(255,77,109,.92);
+      transform:rotate(18deg);
+    }
+    .bow:after{transform:rotate(-18deg)}
+    .giftLabel{
+      position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);
+      font-weight:900;opacity:.9
+    }
+    .openBurst{
+      position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+      opacity:0;
+    }
+    .openBurst.on{opacity:1;animation:burst 480ms ease forwards}
+    @keyframes burst{
+      from{transform:scale(.92);opacity:0}
+      to{transform:scale(1.05);opacity:1}
+    }
+
+    /* Popup display */
+    .display{
+      margin-top:14px;
+      display:grid;place-items:center;
+      min-height:440px;
+    }
+    .popup{
+      display:grid;place-items:center;
+      padding:16px 18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 26px 70px rgba(0,0,0,.55);
+      max-width:min(720px, 92vw);
+    }
+    .media{
+      width:min(420px, 78vw);
+      height:auto;
+      object-fit:contain;
+      filter:drop-shadow(0 18px 28px rgba(0,0,0,.45));
+    }
+    .cap{
+      margin-top:10px;text-align:center;font-weight:900;letter-spacing:.2px
+    }
+    .tiny{margin-top:6px;text-align:center;opacity:.82;font-size:13px}
+
+    /* Memories grid */
+    .grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;margin-top:14px;
+    }
+    .tile{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:12px;
+      cursor:pointer;
+      transition:transform 160ms ease, background 160ms ease;
+    }
+    .tile:hover{transform:translateY(-2px);background:rgba(255,255,255,.07)}
+    .tile img{width:100%;height:160px;object-fit:contain}
+    .tile .t{margin-top:8px;font-weight:900}
+    .tile .d{opacity:.78;font-size:13px;margin-top:4px;line-height:1.25}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="title" id="hdr">🎁 A Surprise for You</div>
+        <div class="btns">
+          <button class="ghost" id="btnHome">Home</button>
+          <button class="ghost" id="btnMem">View memories</button>
+          <button class="primary" id="btnNext" style="display:none">Next surprise ✨</button>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <!-- Scene 1: Gift -->
+        <div class="scene on" id="sceneGift">
+          <div class="sub">
+            Click the present box to open your gift.
+          </div>
+
+          <div class="giftStage">
+            <div class="gift" id="giftBox" aria-label="Open gift">
+              <div class="ribbonV"></div>
+              <div class="ribbonH"></div>
+              <div class="bow"></div>
+              <div class="openBurst" id="burst">🎉</div>
+              <div class="giftLabel">OPEN</div>
+            </div>
+            <div class="giftHint">psst… it’s 布布 & 一二 🧸</div>
+          </div>
+
+          <div class="display" id="giftDisplay" style="display:none">
+            <div class="popup">
+              <img class="media" id="giftMedia" alt="surprise media" />
+              <div class="cap" id="giftCap">Happy Birthday!</div>
+              <div class="tiny" id="giftTiny">It stays here until you click “Next surprise ✨”.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scene 2: Memories -->
+        <div class="scene" id="sceneMem">
+          <div class="sub">
+            Choose a memory set. Each tile swaps the big sticker/GIF.
+          </div>
+
+          <div class="display">
+            <div class="popup">
+              <img class="media" id="memMedia" alt="memory media" />
+              <div class="cap" id="memCap">Pick a set below ✨</div>
+              <div class="tiny" id="memTiny">Click any tile to switch. It stays until you choose another.</div>
+            </div>
+          </div>
+
+          <div class="grid" id="memGrid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- MEDIA LIBRARY ---
+  // Birthday stickers (SigStick “熊貓一二 festival Happy Birthday…” previews)
+  const birthdayStickers = [
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/0-1.thumb128.png", title:"生日快乐！", desc:"一二拿蛋糕" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/1-1.thumb128.png", title:"生日快乐！", desc:"布布拿蛋糕" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/2-1.thumb128.png", title:"许愿时刻", desc:"点蜡烛🎂" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/3-1.thumb128.png", title:"再来一个！", desc:"蛋糕+1" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/4-1.thumb128.png", title:"Happy Birthday", desc:"一二英文款" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/5-1.thumb128.png", title:"Happy Birthday", desc:"布布英文款" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/6-1.thumb128.png", title:"Happy Birthday", desc:"一二小礼物" },
+    { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/7-1.thumb128.png", title:"Happy Birthday", desc:"布布小礼物" }
+  ];
+
+  // Birthday GIFs (Tenor direct media)
+  const birthdayGifs = [
+    { type:"gif", src:"https://media1.tenor.com/m/MzqPdGXZWAAAAAAd/bubu-dudu-happy-birthday.gif", title:"Cake time!", desc:"帽子+蛋糕🎂" },
+    { type:"gif", src:"https://media1.tenor.com/m/jhVNIStBHy0AAAAd/bubu-dudu-birthday.gif", title:"Make a wish!", desc:"蜡烛许愿🕯️" }
+  ];
+
+  // You can add more GIF/sticker URLs here later.
+  // Tip: keep `type:"gif"` for .gif, and `type:"img"` for .png/.webp.
+
+  // Memory sets (each set becomes tiles)
+  const sets = [
+    { id:"bday",  name:"Birthday set 🎂", items:[...birthdayStickers, ...birthdayGifs] },
+    { id:"sweet", name:"Sweet + cozy 🫶", items:[
+      // you can paste your own favorite URLs here (SigStick or Tenor direct media)
+      { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/4-1.thumb128.png", title:"Warm wishes", desc:"soft vibe" },
+      { type:"img", src:"https://cdn.cdnstep.com/hQ569EcL77iDsvjnwyPc/5-1.thumb128.png", title:"Warm wishes", desc:"soft vibe" }
+    ]},
+    { id:"random", name:"Surprise mix ✨", items:[...birthdayGifs, ...birthdayStickers] }
+  ];
+
+  // --- UI / STATE ---
+  const sceneGift = document.getElementById("sceneGift");
+  const sceneMem  = document.getElementById("sceneMem");
+  const btnHome   = document.getElementById("btnHome");
+  const btnMem    = document.getElementById("btnMem");
+  const btnNext   = document.getElementById("btnNext");
+  const hdr       = document.getElementById("hdr");
+
+  const giftBox   = document.getElementById("giftBox");
+  const burst     = document.getElementById("burst");
+  const giftDisplay = document.getElementById("giftDisplay");
+  const giftMedia = document.getElementById("giftMedia");
+  const giftCap   = document.getElementById("giftCap");
+
+  const memGrid   = document.getElementById("memGrid");
+  const memMedia  = document.getElementById("memMedia");
+  const memCap    = document.getElementById("memCap");
+
+  let opened = false;
+  let currentPool = [...birthdayStickers, ...birthdayGifs];
+  let currentIndex = -1;
+
+  function showScene(which){
+    const isGift = (which === "gift");
+    sceneGift.classList.toggle("on", isGift);
+    sceneMem.classList.toggle("on", !isGift);
+    btnNext.style.display = isGift && opened ? "inline-block" : "none";
+    hdr.textContent = isGift ? "🎁 Open your present" : "📸 Memories";
+  }
+
+  function pickNext(){
+    // cycle without repeating immediately
+    if (currentPool.length === 0) return null;
+    currentIndex = (currentIndex + 1) % currentPool.length;
+    return currentPool[currentIndex];
+  }
+
+  function renderMedia(imgEl, item){
+    imgEl.src = item.src;
+    imgEl.alt = item.title || "布布一二";
+  }
+
+  function openGift(){
+    if (!opened){
+      opened = true;
+      burst.classList.add("on");
+      setTimeout(() => burst.classList.remove("on"), 520);
+      giftDisplay.style.display = "grid";
+      btnNext.style.display = "inline-block";
+    }
+    const item = pickNext();
+    if (!item) return;
+    renderMedia(giftMedia, item);
+    giftCap.textContent = item.title ? `🎉 ${item.title}` : "🎉 Surprise!";
+  }
+
+  giftBox.addEventListener("click", openGift);
+  btnNext.addEventListener("click", () => {
+    // stays until user clicks next -> just swap
+    const item = pickNext();
+    if (!item) return;
+    renderMedia(giftMedia, item);
+    giftCap.textContent = item.title ? `✨ ${item.title}` : "✨ Next!";
+  });
+
+  // Memories screen: tiles from all sets
+  function buildMemories(){
+    memGrid.innerHTML = "";
+    // flatten with group headers (kept simple: just tiles with set label in title)
+    const tiles = [];
+    for (const s of sets){
+      for (const it of s.items){
+        tiles.push({ ...it, _set: s.name });
+      }
+    }
+
+    // initial display
+    const first = tiles[0];
+    if (first){
+      renderMedia(memMedia, first);
+      memCap.textContent = `${first._set} · ${first.title || "✨"}`;
+    }
+
+    for (const it of tiles){
+      const div = document.createElement("div");
+      div.className = "tile";
+      div.innerHTML = `
+        <img src="${it.src}" alt="${it.title || "sticker"}" />
+        <div class="t">${it._set}</div>
+        <div class="d">${it.title || "Surprise"} · ${it.desc || ""}</div>
+      `;
+      div.addEventListener("click", () => {
+        renderMedia(memMedia, it);
+        memCap.textContent = `${it._set} · ${it.title || "✨"}`;
+      });
+      memGrid.appendChild(div);
+    }
+  }
+
+  btnMem.addEventListener("click", () => {
+    buildMemories();
+    showScene("mem");
+  });
+  btnHome.addEventListener("click", () => showScene("gift"));
+
+  // start
+  showScene("gift");
+</script>
+</body>
+</html>
